@@ -1,19 +1,21 @@
 YaH3C
 =====
 
-YaH3C 是用于校园网认证的客户端，支持中山大学东校区.
+YaH3C 最初由 [humiaozuzu](https://github.com/humiaozuzu/) 开发，支持中山大学东校区的校园网认证。
 
-为什么不用iNode
+如果你觉得获益良多，可以考虑点击[原项目主页](https://github.com/humiaozuzu/YaH3C/)上的链接进行捐款。
+
+经过修改，该版本 YaH3C 模仿了华工北校区翼起来客户端（俗称蝴蝶客户端）的认证过程。需要注意的是：
+
++ 由于精力有限，该客户端仅仅在北校区北十二宿舍楼测试过，如果在其它宿舍使用出问题，欢迎提交 issues
++ 不提供不断网，欠费上网的功能
+
+开发原因
 ---------------
 
-* i开头完全是对Apple的侮辱嘛 = =
-* 强制添加启动项
-* gui和cli使用的udp交互，很多时候Linux/Mac下掉线完全是因为实现的效率太低
-* 安装脚本居然是自删除的
-* 默认强制记录日志文件，增加CPU负载，减少硬盘寿命，一段时间后就过GB了（是否有敏感信息不得而知了）
-* Linux下仅仅支持Ubuntu 32位系统
-* Mac下安装后居然要重启
-* 使用的第三方库乱放和HomeBrew冲突
++ 网络中心告知翼起来客户端不支持 Linux
++ 不想额外购置可以使用 Scutclient 路由器
++ Scutclient 在 PC 上编译好后认证失败， 并且其使用 C++ 编写，在认证方式改变的情况下，YaH3C 更方便修改调整
 
 依赖
 ------------
@@ -36,7 +38,7 @@ sudo pacman -S git
 然后，从项目中clone下来并安装
 
 ```bash
-git clone git://github.com/humiaozuzu/YaH3C.git
+git clone https://github.com/tatsuteng/YaH3C.git
 cd YaH3C
 sudo python setup.py install
 ```
@@ -45,8 +47,6 @@ sudo python setup.py install
 
 使用
 ----
-
-完整的联网过程有2步，首先使用本客户端通过交换机的认证，然后获取ip。
 
 ### 认证
 
@@ -58,13 +58,11 @@ sudo yah3c
 
 根据程序的提示输入账号密码就可以开始认证了，有些选项如果看不懂请直接按`Enter`。
 
-### 获取ip
+### 关于 dhcp_command
 
-因为YaH3C仅仅是**认证**客户端，所以通过认证后你需要自己获取ip联网，不过为了方便还是添加了dhcp支持。
+dhcp_command 用于认证后获取 IP 地址，但是由于华工北校区在静态 IP 基础上进行认证，
 
-如果没有指定dhcp的命令，你可以在认证成功后使用自己喜欢的网络管理工具获取IP，如NetworkManager或Wicd。
-
-YaH3C支持基本的命令行参数，执行`yah3c -h`可以看到支持的命令行参数
+所以不需要额外的命令获取 IP 地址，在建立帐号时遇到该提示直接按`Enter`即可。
 
 ``` bash
 $ yah3c -h       
@@ -98,30 +96,12 @@ ScreenShots
 
 认证成功:
 
-![success](https://raw.github.com/humiaozuzu/YaH3C/master/screenshots/success.png)
+![success](https://raw.github.com/tatsuteng/YaH3C/master/screenshots/success.png)
 
 认证失败:
 
-![failure](https://raw.github.com/humiaozuzu/YaH3C/master/screenshots/failure.png)
-
-
-Todo
-----
-* 添加BSD BPF 支持，这样在OS X也可以使用了
-* 完善收集调试信息的功能，方便用户提交认证信息
-* 完善对H3C协议的支持
-
-Thanks
-------
-* [qiao](https://github.com/qiao) - Write python installation script for YaH3C
-* [houqp](https://github.com/houqp) - Refered to houqp's [pyh3c](https://github.com/houqp/pyh3c)
-* [tigersoldier](https://github.com/tigersoldier) - Write EAP-Md5 for YaH3C
+![failure](https://raw.github.com/tatusteng/YaH3C/master/screenshots/failure.png)
 
 License
 -------
 YaH3c的代码使用MIT License发布，此外，禁止使用YaH3C以及YaH3C的修改程序用于商业目的（比如交叉编译到路由进行销售等行为）
-
-Donate
-------
-
- <a href='http://me.alipay.com/humiaozuzu'> <img src='https://img.alipay.com/sys/personalprod/style/mc/btn-index.png' /> </a>
