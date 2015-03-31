@@ -22,6 +22,7 @@ YaH3C 最初由 [humiaozuzu](https://github.com/humiaozuzu/) 开发，支持中�
  
 * 主流Linux发行版，包括OpenWrt/DD-WRT
 * Python2
+* python-netifaces
 
 安装
 ------------
@@ -35,7 +36,19 @@ sudo apt-get install git
 # ArchLinux
 sudo pacman -S git
 ```
-然后，从项目中clone下来并安装
+
+然后，请配置好静态 IP 配置以及安装 python-netifaces：
+
+``bash
+# Ubuntu/Debian
+sudo apt-get install python-netifaces
+
+#Archlinux
+sudo pacman -S python2-netifaces
+
+```
+
+最后，从项目中clone下来并安装
 
 ```bash
 git clone https://github.com/tatsuteng/YaH3C.git
