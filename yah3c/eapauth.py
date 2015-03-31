@@ -15,6 +15,8 @@ from colorama import Fore, Style, init
 # init() # required in Windows
 from eappacket import *
 
+import netifaces as ni
+
 def display_prompt(color, string):
     prompt = color + Style.BRIGHT + '==> ' + Style.RESET_ALL
     prompt += Style.BRIGHT + string + Style.RESET_ALL
@@ -34,21 +36,27 @@ class EAPAuth:
         self.client.bind((login_info['ethernet_interface'], ETHERTYPE_PAE))
         # get local ethernet card address
         self.mac_addr = self.client.getsockname()[4]
+        # get local ethernet card ip address
+        self.ip_addr = ni.ifaddresses(login_info['ethernet_interface'])[2][0]['addr']
         self.ethernet_header = get_ethernet_header(self.mac_addr, PAE_GROUP_ADDR, ETHERTYPE_PAE)
         self.has_sent_logoff = False
         self.login_info = login_info
-        self.version_info = '\x06\x07bjQ7SE8BZ3MqHhs3clMregcDY3Y=\x20\x20'
+        self.version_info = '2.1.4'
+        self.resp_id = self.login_info['username']+"#0"+self.ip_addr+"#"+self.version_info
+        self.resp_md5_id = self.login_info['username']+".#0"+self.ip_addr+"#"+self.version_info
+        self.ethernet_padding_trailer = '\xff\xff\x37\x77\xff\x84\xf7\x03\xc6\x00\x00\x00\xff\x84\xf7\x03\x80\xac\x9b\x7c\x7b\x1e\x8e\x00\x00\x13\x11\x38\x30\x32\x31\x78\x2e\x65\x78\x65\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x33\x37\x35\x30\x30\x00\x00\x13\x11\x00\x28\x1a\x28\x00\x00\x13\x11\x17\x22\x91\x62\x61\x65\x61\x65\x61\x69\x63\x68\x95\x69\x66\x94\x94\x63\x95\x60\x68\x94\x68\x94\x68\x63\x96\x91\x61\x9a\xa7\x94\x9f\xab\x00\x00\x13\x11\x18\x06\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+        #self.ethernet_checksum = '\x00\x00\x00\x00'
 
     def send_start(self):
         # sent eapol start packet
-        eap_start_packet = self.ethernet_header + get_EAPOL(EAPOL_START)
+        eap_start_packet = self.ethernet_header + get_EAPOL(EAPOL_START) + self.ethernet_padding_trailer
         self.client.send(eap_start_packet)
 
         display_prompt(Fore.GREEN, 'Sending EAPOL start')
 
     def send_logoff(self):
         # sent eapol logoff packet
-        eap_logoff_packet = self.ethernet_header + get_EAPOL(EAPOL_LOGOFF)
+        eap_logoff_packet = self.ethernet_header + get_EAPOL(EAPOL_LOGOFF) + self.ethernet_padding_trailer
         self.client.send(eap_logoff_packet)
         self.has_sent_logoff = True
 
@@ -60,17 +68,21 @@ class EAPAuth:
                     get_EAP(EAP_RESPONSE,
                         packet_id,
                         EAP_TYPE_ID,
-                        self.version_info + self.login_info['username'])))
+                        self.resp_id))
+                + self.ethernet_padding_trailer)
 
     def send_response_md5(self, packet_id, md5data):
+        # md5 here is not real md5 but padded password
         md5 = self.login_info['password'][0:16]
         if len(md5) < 16:
-            md5 = md5 + '\x00' * (16 - len (md5))
-        chap = []
-        for i in xrange(0, 16):
-            chap.append(chr(ord(md5[i]) ^ ord(md5data[i])))
-        resp = chr(len(chap)) + ''.join(chap) + self.login_info['username']
-        eap_packet = self.ethernet_header + get_EAPOL(EAPOL_EAPPACKET, get_EAP(EAP_RESPONSE, packet_id, EAP_TYPE_MD5, resp))
+            md5 = md5 + '\x00' * (16 -len(md5))
+        resp = MD5_VALUE_SIZE +\
+            md5 +\
+            self.resp_md5_id+\
+            '#EXT'
+        eap_packet = self.ethernet_header +\
+                get_EAPOL(EAPOL_EAPPACKET, get_EAP(EAP_RESPONSE, packet_id, EAP_TYPE_MD5, resp)) +\
+                self.ethernet_padding_trailer
         try:
             self.client.send(eap_packet)
         except socket.error, msg:

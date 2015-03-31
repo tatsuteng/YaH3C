@@ -30,8 +30,11 @@ EAP_FAILURE = 4
 # 254     Expanded Types
 # 255     Experimental use
 EAP_TYPE_ID = 1                # identity
+EAP_TYPE_NAK = 3               # Legacy Nak
 EAP_TYPE_MD5 = 4               # md5 Challenge
 EAP_TYPE_H3C = 7               # H3C eap packet(used for SYSU east campus)
+
+MD5_VALUE_SIZE = "\x10"
 
 ### Packet builders
 def get_EAPOL(type, payload=""):
