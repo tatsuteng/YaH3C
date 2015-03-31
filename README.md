@@ -39,11 +39,11 @@ sudo pacman -S git
 
 然后，请配置好静态 IP 配置以及安装 python-netifaces：
 
-``bash
+```bash
 # Ubuntu/Debian
 sudo apt-get install python-netifaces
 
-#Archlinux
+# Archlinux
 sudo pacman -S python2-netifaces
 
 ```
