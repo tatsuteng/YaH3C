@@ -63,6 +63,8 @@ sudo python setup.py install
 
 ### 认证
 
+联网认证之前，请确保**有线连接已启用**。
+
 程序运行时必须要有root权限：
 
 ```bash
